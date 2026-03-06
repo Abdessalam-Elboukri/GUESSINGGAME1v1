@@ -108,12 +108,13 @@ function App() {
     return <Home onJoinGame={handleJoinGame} />;
   }
 
-  if (gamePhase === 'waiting' && roomCode && roomId) {
+  if (gamePhase === 'waiting' && roomCode && roomId && playerId) {
     return (
       <WaitingRoom
         roomCode={roomCode}
         roomId={roomId}
         players={players}
+        playerId={playerId}
         onGameStart={handleGameStart}
       />
     );

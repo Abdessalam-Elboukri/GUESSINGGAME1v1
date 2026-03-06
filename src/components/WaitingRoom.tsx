@@ -7,11 +7,13 @@ interface WaitingRoomProps {
   roomCode: string;
   roomId: string;
   players: Player[];
+  playerId: string;
   onGameStart: () => void;
 }
 
-export const WaitingRoom = ({ roomCode, roomId, players, onGameStart }: WaitingRoomProps) => {
+export const WaitingRoom = ({ roomCode, roomId, players, playerId, onGameStart }: WaitingRoomProps) => {
   const [copied, setCopied] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomCode);
@@ -20,10 +22,14 @@ export const WaitingRoom = ({ roomCode, roomId, players, onGameStart }: WaitingR
   };
 
   useEffect(() => {
-    if (players.length === 2) {
-      startGame();
+    if (players.length === 2 && !isStarting) {
+      const currentPlayer = players.find((p) => p.id === playerId);
+      if (currentPlayer && currentPlayer.player_number === 1) {
+        setIsStarting(true);
+        startGame();
+      }
     }
-  }, [players]);
+  }, [players, playerId, isStarting]);
 
   const startGame = async () => {
     const { data: pictures } = await supabase.from('pictures').select('*');
@@ -38,8 +44,6 @@ export const WaitingRoom = ({ roomCode, roomId, players, onGameStart }: WaitingR
 
     await supabase.from('players').update({ picture_id: picture2.id }).eq('id', players[1].id);
 
-    await supabase.from('rooms').update({ status: 'playing' }).eq('id', roomId);
-
     await supabase.from('messages').insert({
       room_id: roomId,
       player_id: null,
@@ -47,7 +51,7 @@ export const WaitingRoom = ({ roomCode, roomId, players, onGameStart }: WaitingR
       content: 'Game started! Players have been assigned their secret pictures.',
     });
 
-    onGameStart();
+    await supabase.from('rooms').update({ status: 'playing' }).eq('id', roomId);
   };
 
   return (
