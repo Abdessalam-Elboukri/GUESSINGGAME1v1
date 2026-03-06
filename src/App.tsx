@@ -62,33 +62,29 @@ function App() {
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'players', filter: `room_id=eq.${room.id}` },
-          () => {
-            const { data: updatedPlayers } = supabase
+          async () => {
+            const { data } = await supabase
               .from('players')
               .select('*')
               .eq('room_id', room.id);
 
-            updatedPlayers.then(({ data }) => {
-              if (data) {
-                setPlayers(data);
-              }
-            });
+            if (data) {
+              setPlayers(data);
+            }
           }
         )
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'players', filter: `room_id=eq.${room.id}` },
-          () => {
-            const { data: updatedPlayers } = supabase
+          async () => {
+            const { data } = await supabase
               .from('players')
               .select('*')
               .eq('room_id', room.id);
 
-            updatedPlayers.then(({ data }) => {
-              if (data) {
-                setPlayers(data);
-              }
-            });
+            if (data) {
+              setPlayers(data);
+            }
           }
         )
         .subscribe();
